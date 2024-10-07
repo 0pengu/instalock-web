@@ -1,36 +1,15 @@
-# Use Node.js for building the front-end assets
-FROM node:22.2-alpine as build-stage
+FROM node:20.12.2-alpine as build
 
 WORKDIR /app
 
-# Copy package.json and package-lock.json first to leverage Docker caching
-COPY package*.json ./
+COPY package.json pnpm-lock.yaml* ./
+COPY prisma/schema.prisma ./prisma/
+RUN corepack enable pnpm && pnpm i --frozen-lockfile
 
-RUN npm install
-
-# Copy the rest of the application code and build the front-end assets
 COPY . .
 
-RUN npm run build
+RUN pnpm run build
 
-# Use Python for serving the application
-FROM python:3.12.3-alpine
+EXPOSE 3000
 
-WORKDIR /app
-
-# Install Python dependencies
-COPY ./api/requirements.txt /app/server/requirements.txt
-RUN pip install -r /app/server/requirements.txt \
-    && pip install gunicorn==22.0.0
-
-# Copy the server code
-COPY ./api /app/server
-
-# Copy only the build artifacts from the previous stage
-COPY --from=build-stage /app/dist /app/dist
-
-EXPOSE 5001
-
-# Command to run the application
-
-CMD sh -c "cd server && flask db upgrade && gunicorn -b 0.0.0.0:5001 -w 8 app:app"
+CMD pnpx tsx src/server/index.ts

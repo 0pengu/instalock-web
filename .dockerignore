@@ -6,14 +6,8 @@ npm-debug.log
 .coverage
 .coverage.*
 .env
+.env.*
 .aws
-
-**/.mypy_cache/
-api/.env
-api/.env.local
-api/.env.previous
-api/.env.me
-api/.gitignore
 .env*
 .flaskenv*
 !.env.project
